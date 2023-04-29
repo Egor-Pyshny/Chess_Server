@@ -140,7 +140,11 @@ namespace ConsoleApp1
                     }
                 }
                 if (user2 != null)
-                    user2.GetStream().Write(new byte[] { 253 }, 0, 1);
+                    try
+                    {
+                        user2.GetStream().Write(new byte[] { 253 }, 0, 1);
+                    }
+                    catch (Exception) { }
             }
             catch (System.ObjectDisposedException) {}
             list.RemoveAt(ind);
