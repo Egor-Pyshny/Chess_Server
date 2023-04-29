@@ -31,14 +31,21 @@ namespace ConsoleApp1
 
         public static void newclient(TcpClient client,byte ind) {
             bool conected = false;
+            bool flag = true;
             TcpClient user2 = null;
             NetworkStream stream = client.GetStream();
             try
             {
-                while (client.GetStream().CanRead && client.GetStream().CanWrite)
+                while (flag)
                 {
                     byte[] data = new byte[4096];
                     byte[] msg1 = new byte[2] { 255, ind };
+                    Socket soc = client.Client;
+                    bool t1 = soc.Poll(100, SelectMode.SelectRead);
+                    bool t2 = (soc.Available == 0);
+                    if (t1 && t2) {
+                        flag = false;
+                    }                       
                     if (stream.DataAvailable)
                     {
                         int count = stream.Read(data, 0, data.Length);
