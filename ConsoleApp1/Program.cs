@@ -21,12 +21,12 @@ namespace ConsoleApp1
             {
                 TcpClient tcp = server.AcceptTcpClient();
                 list.Add(tcp);
+                Console.WriteLine($"Входящее подключение: {list[list.Count - 1].Client.RemoteEndPoint}");
                 conections.Add(false);
                 int ind = list.Count - 1;
                 Task t = new Task(()=>newclient(tcp,(byte)ind));
                 t.Start();
             }
-            Console.WriteLine($"Входящее подключение: {list[list.Count-1].Client.RemoteEndPoint}");
         }
 
         public static void newclient(TcpClient client,byte ind) {
@@ -147,7 +147,7 @@ namespace ConsoleApp1
                     catch (Exception) { }
             }
             catch (System.ObjectDisposedException) {}
-            list.RemoveAt(ind);
+            list.Remove(client);
         }
     }
 }
