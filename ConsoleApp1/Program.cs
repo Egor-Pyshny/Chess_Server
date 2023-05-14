@@ -13,6 +13,7 @@ namespace ConsoleApp1
 
         public static List<TcpClient> list = new List<TcpClient>();
         public static List<bool> conections = new List<bool>();
+        public static List<bool> readyforgame = new List<bool>();
         public static TcpListener server = new TcpListener(IPAddress.Parse("192.168.0.104"), 8001);
         static void Main(string[] args)
         {
@@ -23,6 +24,7 @@ namespace ConsoleApp1
                 list.Add(tcp);
                 Console.WriteLine($"Входящее подключение: {list[list.Count - 1].Client.RemoteEndPoint}");
                 conections.Add(false);
+                readyforgame.Add(true);
                 int ind = list.Count - 1;
                 Task t = new Task(()=>newclient(tcp,(byte)ind));
                 t.Start();
@@ -109,7 +111,7 @@ namespace ConsoleApp1
                                         int send_ind = data[1];
                                         foreach (TcpClient item in list)
                                         {
-                                            if (conections[i]==false)
+                                            if (conections[i]==false && readyforgame[i])
                                             {
                                                 /*if (send_ind != i)
                                                 {*/
@@ -121,6 +123,7 @@ namespace ConsoleApp1
                                                 /*}
                                                 i++;*/
                                             }
+                                            i++;
                                         }
                                         byte[] msg = new byte[tmp.Length + 1];
                                         msg[0] = (byte)tmp.Length;
@@ -134,6 +137,16 @@ namespace ConsoleApp1
                                         user2.GetStream().Write(data, 0, data.Length);
                                         break;
                                     }
+                                case 4:
+                                    {
+                                        readyforgame[ind] = false;
+                                        break;
+                                    }
+                                case 5:
+                                    {
+                                        readyforgame[ind] = true;
+                                        break;
+                                    }                                   
                                     //код 3 пересылка пакета
                             }
                         }
