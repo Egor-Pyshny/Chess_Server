@@ -61,6 +61,7 @@ namespace ConsoleApp1
                                         user2 = list[data[1]];
                                         byte[] msg = new byte[2] { 255, ind };
                                         conections[ind] = true;
+                                        Console.WriteLine(client.Client.RemoteEndPoint.ToString() + " send request for connection to " + user2.Client.RemoteEndPoint.ToString());
                                         user2.GetStream().Write(msg, 0, msg.Length);
                                         break;
                                     }
@@ -73,6 +74,7 @@ namespace ConsoleApp1
                                     {
                                         user2 = list[data[1]];
                                         byte[] msg = new byte[2] { 254, ind };
+                                        Console.WriteLine(user2.Client.RemoteEndPoint.ToString() + " accept connection from " + client.Client.RemoteEndPoint.ToString());
                                         user2.GetStream().Write(msg, 0, msg.Length);
                                         client.GetStream().Write(msg, 0, msg.Length);
                                         conections[ind] = true;
@@ -81,6 +83,7 @@ namespace ConsoleApp1
                                     }
                                 case 254://подтверждение подключения
                                     {
+                                        Console.WriteLine(client.Client.RemoteEndPoint.ToString() + " in game ");
                                         conections[ind] = true;
                                         conected = true;
                                         break;
@@ -92,6 +95,7 @@ namespace ConsoleApp1
                                             byte[] msg = new byte[2] { 253, ind };
                                             if (data[1] < list.Count)
                                             {
+                                                Console.WriteLine(client.Client.RemoteEndPoint.ToString() + " broke connection with " + user2.Client.RemoteEndPoint.ToString());
                                                 user2 = list[data[1]];
                                                 user2.GetStream().Write(msg, 0, msg.Length);
                                             }
@@ -109,6 +113,7 @@ namespace ConsoleApp1
                                         byte[] tmp = new byte[0];
                                         int i = 0;
                                         int send_ind = data[1];
+                                        Console.WriteLine(client.Client.RemoteEndPoint.ToString() + " send LIST request ");
                                         foreach (TcpClient item in list)
                                         {
                                             if (conections[i]==false && readyforgame[i])
@@ -133,17 +138,20 @@ namespace ConsoleApp1
                                     }
                                 case 3:
                                     {
+                                        Console.WriteLine(client.Client.RemoteEndPoint.ToString() + " send data to " + user2.Client.RemoteEndPoint.ToString());
                                         user2 = list[data[1]];
                                         user2.GetStream().Write(data, 0, data.Length);
                                         break;
                                     }
                                 case 4:
                                     {
+                                        Console.WriteLine(client.Client.RemoteEndPoint.ToString() + " in offline mode ");
                                         readyforgame[ind] = false;
                                         break;
                                     }
                                 case 5:
                                     {
+                                        Console.WriteLine(client.Client.RemoteEndPoint.ToString() + " in online mode ");
                                         readyforgame[ind] = true;
                                         break;
                                     }                                   
@@ -160,6 +168,7 @@ namespace ConsoleApp1
                     catch (Exception) { }
             }
             catch (System.ObjectDisposedException) {}
+            Console.WriteLine(client.Client.RemoteEndPoint.ToString() + "dissconected");
             list.Remove(client);
         }
     }
