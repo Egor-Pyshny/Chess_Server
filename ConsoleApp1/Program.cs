@@ -12,9 +12,11 @@ namespace ConsoleApp1
     {
 
         public static List<TcpClient> list = new List<TcpClient>();
-        public static List<bool> conections = new List<bool>();
-        public static List<bool> readyforgame = new List<bool>();
-        public static TcpListener server = new TcpListener(IPAddress.Parse("192.168.0.104"), 8001);
+        //public static List<bool> conections = new List<bool>();
+        public static Dictionary<TcpClient,bool> conections = new Dictionary<TcpClient, bool>();
+        public static Dictionary<TcpClient, bool> readyforgame = new Dictionary<TcpClient, bool>();
+        //public static List<bool> readyforgame = new List<bool>();
+        public static TcpListener server = new TcpListener(IPAddress.Parse("192.168.0.102"), 8001);
         static void Main(string[] args)
         {
             server.Start(10);
@@ -23,14 +25,14 @@ namespace ConsoleApp1
                 TcpClient tcp = server.AcceptTcpClient();
                 list.Add(tcp);
                 Console.WriteLine($"Входящее подключение: {list[list.Count - 1].Client.RemoteEndPoint}");
-                conections.Add(false);
-                readyforgame.Add(true);
+                conections.Add(tcp,false);
+                readyforgame.Add(tcp,true);
                 int ind = list.Count - 1;
                 Task t = new Task(()=>newclient(tcp,(byte)ind));
                 t.Start();
             }
         }
-
+         
         public static void newclient(TcpClient client,byte ind) {
             bool conected = false;
             bool flag = true;
@@ -60,7 +62,7 @@ namespace ConsoleApp1
                                     {
                                         user2 = list[data[1]];
                                         byte[] msg = new byte[2] { 255, ind };
-                                        conections[ind] = true;
+                                        conections[client] = true;
                                         Console.WriteLine(client.Client.RemoteEndPoint.ToString() + " send request for connection to " + user2.Client.RemoteEndPoint.ToString());
                                         user2.GetStream().Write(msg, 0, msg.Length);
                                         break;
@@ -77,14 +79,14 @@ namespace ConsoleApp1
                                         Console.WriteLine(user2.Client.RemoteEndPoint.ToString() + " accept connection from " + client.Client.RemoteEndPoint.ToString());
                                         user2.GetStream().Write(msg, 0, msg.Length);
                                         client.GetStream().Write(msg, 0, msg.Length);
-                                        conections[ind] = true;
+                                        conections[client] = true;
                                         conected = true;
                                         break;
                                     }
                                 case 254://подтверждение подключения
                                     {
                                         Console.WriteLine(client.Client.RemoteEndPoint.ToString() + " in game ");
-                                        conections[ind] = true;
+                                        conections[client] = true;
                                         conected = true;
                                         break;
                                     }
@@ -100,8 +102,8 @@ namespace ConsoleApp1
                                                 user2.GetStream().Write(msg, 0, msg.Length);
                                             }
                                             //list.Remove(client);
-                                            conections[ind] = false;
-                                            conections[data[1]] = false;
+                                            conections[client] = false;
+                                            conections[list[data[1]]] = false;
                                             conected = false;
                                         }
                                         /*list.Remove(client);
@@ -116,7 +118,7 @@ namespace ConsoleApp1
                                         Console.WriteLine(client.Client.RemoteEndPoint.ToString() + " send LIST request ");
                                         foreach (TcpClient item in list)
                                         {
-                                            if (conections[i]==false && readyforgame[i])
+                                            if (conections[item]==false && readyforgame[item])
                                             {
                                                 /*if (send_ind != i)
                                                 {*/
@@ -146,13 +148,13 @@ namespace ConsoleApp1
                                 case 4:
                                     {
                                         Console.WriteLine(client.Client.RemoteEndPoint.ToString() + " in offline mode ");
-                                        readyforgame[ind] = false;
+                                        readyforgame[client] = false;
                                         break;
                                     }
                                 case 5:
                                     {
                                         Console.WriteLine(client.Client.RemoteEndPoint.ToString() + " in online mode ");
-                                        readyforgame[ind] = true;
+                                        readyforgame[client] = true;
                                         break;
                                     }                                   
                                     //код 3 пересылка пакета
@@ -170,6 +172,8 @@ namespace ConsoleApp1
             catch (System.ObjectDisposedException) {}
             Console.WriteLine(client.Client.RemoteEndPoint.ToString() + "dissconected");
             list.Remove(client);
+            conections.Remove(client);
+            readyforgame.Remove(client);
         }
     }
 }
